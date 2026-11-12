@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="es"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>CatalogoCliente.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">ms-personal</a> &gt; <a href="index.source.html" class="el_package">com.sakura.personal.client</a> &gt; <span class="el_source">CatalogoCliente.java</span></div><h1>CatalogoCliente.java</h1><pre class="source lang-java linenums">package com.sakura.personal.client;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
+import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.RestClientException;
+import org.springframework.web.client.RestTemplate;
+
+import com.sakura.personal.exception.RecursoNoEncontradoException;
+import com.sakura.personal.exception.ReglaNegocioException;
+
+@Component
+<span class="nc" id="L14">public class CatalogoCliente {</span>
+
+	@Autowired
+	private RestTemplate restTemplate;
+
+	@Value(&quot;${sakura.catalogo.url}&quot;)
+	private String baseUrl;
+
+	public ServicioDTO obtener(Long id) {
+		try {
+<span class="nc" id="L24">			ServicioDTO servicio = restTemplate.getForObject(baseUrl + &quot;/api/v1/servicios/&quot; + id, ServicioDTO.class);</span>
+<span class="nc bnc" id="L25" title="All 4 branches missed.">			if (servicio == null || servicio.getId() == null) {</span>
+<span class="nc" id="L26">				throw new RecursoNoEncontradoException(&quot;No existe el servicio&quot;);</span>
+			}
+<span class="nc" id="L28">			return servicio;</span>
+<span class="nc" id="L29">		} catch (HttpClientErrorException.NotFound ex) {</span>
+<span class="nc" id="L30">			throw new RecursoNoEncontradoException(&quot;No existe el servicio&quot;);</span>
+<span class="nc" id="L31">		} catch (RestClientException ex) {</span>
+<span class="nc" id="L32">			throw new ReglaNegocioException(&quot;No se pudo consultar el catálogo&quot;);</span>
+		}
+	}
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.14.202510111229</span></div></body></html>

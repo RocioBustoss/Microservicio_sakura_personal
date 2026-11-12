@@ -1,0 +1,144 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="es"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ProfesionalService.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">ms-personal</a> &gt; <a href="index.source.html" class="el_package">com.sakura.personal.service</a> &gt; <span class="el_source">ProfesionalService.java</span></div><h1>ProfesionalService.java</h1><pre class="source lang-java linenums">package com.sakura.personal.service;
+
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import com.sakura.personal.client.AgendaCliente;
+import com.sakura.personal.client.CatalogoCliente;
+import com.sakura.personal.client.ReservaDTO;
+import com.sakura.personal.client.ServicioDTO;
+import com.sakura.personal.exception.RecursoNoEncontradoException;
+import com.sakura.personal.exception.ReglaNegocioException;
+import com.sakura.personal.model.Ausencia;
+import com.sakura.personal.model.Profesional;
+import com.sakura.personal.model.ProfesionalServicio;
+import com.sakura.personal.model.Turno;
+import com.sakura.personal.repository.AusenciaRepository;
+import com.sakura.personal.repository.ProfesionalRepository;
+import com.sakura.personal.repository.ProfesionalServicioRepository;
+import com.sakura.personal.repository.TurnoRepository;
+
+@Service
+<span class="fc" id="L26">public class ProfesionalService {</span>
+
+	@Autowired
+	private ProfesionalRepository profesionalRepository;
+
+	@Autowired
+	private ProfesionalServicioRepository profesionalServicioRepository;
+
+	@Autowired
+	private AusenciaRepository ausenciaRepository;
+
+	@Autowired
+	private CatalogoCliente catalogoCliente;
+
+	@Autowired
+	private AgendaCliente agendaCliente;
+
+	@Autowired
+	private TurnoService turnoService;
+
+	@Autowired
+	private TurnoRepository turnoRepository;
+
+	public List&lt;Profesional&gt; listarActivos() {
+<span class="fc" id="L50">		return profesionalRepository.findByActivoTrueOrderByNombreAsc();</span>
+	}
+
+	public List&lt;Profesional&gt; listarTodos() {
+<span class="fc" id="L54">		return profesionalRepository.findAllByOrderByNombreAsc();</span>
+	}
+
+	public Profesional buscar(Long id) {
+<span class="fc" id="L58">		return profesionalRepository.findById(id)</span>
+<span class="fc" id="L59">				.orElseThrow(() -&gt; new RecursoNoEncontradoException(&quot;No existe el profesional&quot;));</span>
+	}
+
+	public Profesional crear(Profesional datos) {
+<span class="fc" id="L63">		datos.setId(null);</span>
+<span class="fc" id="L64">		datos.setActivo(true);</span>
+<span class="fc" id="L65">		return profesionalRepository.save(datos);</span>
+	}
+
+	public Profesional actualizar(Long id, Profesional datos) {
+<span class="fc" id="L69">		Profesional actual = buscar(id);</span>
+<span class="fc" id="L70">		actual.setNombre(datos.getNombre());</span>
+<span class="fc" id="L71">		actual.setCorreo(datos.getCorreo());</span>
+<span class="fc" id="L72">		actual.setTelefono(datos.getTelefono());</span>
+<span class="fc" id="L73">		actual.setEspecialidad(datos.getEspecialidad());</span>
+<span class="fc" id="L74">		actual.setActivo(datos.isActivo());</span>
+<span class="fc" id="L75">		return profesionalRepository.save(actual);</span>
+	}
+
+	public void eliminar(Long id, String authorization) {
+<span class="fc" id="L79">		buscar(id);</span>
+<span class="fc bfc" id="L80" title="All 2 branches covered.">		if (agendaCliente.tieneReservas(id, authorization)) {</span>
+<span class="fc" id="L81">			throw new ReglaNegocioException(</span>
+					&quot;No se puede eliminar: tiene citas registradas. Cancele o reasigne esas citas primero&quot;);
+		}
+<span class="fc" id="L84">		profesionalServicioRepository.deleteByProfesionalId(id);</span>
+<span class="fc" id="L85">		turnoRepository.deleteByProfesionalId(id);</span>
+<span class="fc" id="L86">		ausenciaRepository.deleteByProfesionalId(id);</span>
+<span class="fc" id="L87">		profesionalRepository.deleteById(id);</span>
+<span class="fc" id="L88">	}</span>
+
+	public List&lt;Turno&gt; listarTurnos(Long profesionalId) {
+<span class="fc" id="L91">		buscar(profesionalId);</span>
+<span class="fc" id="L92">		return turnoService.listar(profesionalId);</span>
+	}
+
+	public Turno agregarTurno(Long profesionalId, Turno turno) {
+<span class="fc" id="L96">		return turnoService.guardar(profesionalId, turno);</span>
+	}
+
+	public List&lt;ServicioDTO&gt; listarServicios(Long profesionalId) {
+<span class="fc" id="L100">		buscar(profesionalId);</span>
+<span class="fc" id="L101">		List&lt;ServicioDTO&gt; servicios = new ArrayList&lt;&gt;();</span>
+<span class="fc bfc" id="L102" title="All 2 branches covered.">		for (ProfesionalServicio vinculo : profesionalServicioRepository.findByProfesionalId(profesionalId)) {</span>
+<span class="fc" id="L103">			servicios.add(catalogoCliente.obtener(vinculo.getServicioId()));</span>
+<span class="fc" id="L104">		}</span>
+<span class="fc" id="L105">		return servicios;</span>
+	}
+
+	public List&lt;ServicioDTO&gt; asociarServicios(Long profesionalId, List&lt;Long&gt; servicioIds) {
+<span class="fc" id="L109">		Profesional profesional = buscar(profesionalId);</span>
+<span class="fc" id="L110">		profesionalServicioRepository.deleteByProfesionalId(profesionalId);</span>
+<span class="fc bfc" id="L111" title="All 2 branches covered.">		if (servicioIds != null) {</span>
+<span class="fc bfc" id="L112" title="All 2 branches covered.">			for (Long servicioId : servicioIds) {</span>
+<span class="fc" id="L113">				catalogoCliente.obtener(servicioId);</span>
+<span class="fc" id="L114">				ProfesionalServicio vinculo = new ProfesionalServicio();</span>
+<span class="fc" id="L115">				vinculo.setProfesional(profesional);</span>
+<span class="fc" id="L116">				vinculo.setServicioId(servicioId);</span>
+<span class="fc" id="L117">				profesionalServicioRepository.save(vinculo);</span>
+<span class="fc" id="L118">			}</span>
+		}
+<span class="fc" id="L120">		return listarServicios(profesionalId);</span>
+	}
+
+	public Ausencia registrarAusencia(Long profesionalId, Ausencia ausencia) {
+<span class="fc" id="L124">		Profesional profesional = buscar(profesionalId);</span>
+<span class="fc bfc" id="L125" title="All 2 branches covered.">		if (ausencia.getFechaFin().isBefore(ausencia.getFechaInicio())) {</span>
+<span class="fc" id="L126">			throw new ReglaNegocioException(&quot;La fecha de término no puede ser anterior a la de inicio&quot;);</span>
+		}
+<span class="fc" id="L128">		ausencia.setId(null);</span>
+<span class="fc" id="L129">		ausencia.setProfesional(profesional);</span>
+<span class="fc" id="L130">		return ausenciaRepository.save(ausencia);</span>
+	}
+
+	public List&lt;Ausencia&gt; listarAusencias(Long profesionalId) {
+<span class="fc" id="L134">		buscar(profesionalId);</span>
+<span class="fc" id="L135">		return ausenciaRepository.findByProfesionalIdOrderByFechaInicioAsc(profesionalId);</span>
+	}
+
+	public List&lt;ReservaDTO&gt; historial(Long profesionalId, LocalDate desde, LocalDate hasta, String authorization) {
+<span class="fc" id="L139">		buscar(profesionalId);</span>
+<span class="fc" id="L140">		return agendaCliente.historial(profesionalId, desde, hasta, authorization);</span>
+	}
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.14.202510111229</span></div></body></html>

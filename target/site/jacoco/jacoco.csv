@@ -1,0 +1,19 @@
+GROUP,PACKAGE,CLASS,INSTRUCTION_MISSED,INSTRUCTION_COVERED,BRANCH_MISSED,BRANCH_COVERED,LINE_MISSED,LINE_COVERED,COMPLEXITY_MISSED,COMPLEXITY_COVERED,METHOD_MISSED,METHOD_COVERED
+ms-personal,com.sakura.personal.config,DatosIniciales,186,0,6,0,31,0,6,0,3,0
+ms-personal,com.sakura.personal.config,RestTemplateConfig,6,0,0,0,2,0,2,0,2,0
+ms-personal,com.sakura.personal.config,TokenSoporte,32,0,8,0,6,0,5,0,1,0
+ms-personal,com.sakura.personal.service,TurnoService,0,128,0,24,0,24,0,18,0,6
+ms-personal,com.sakura.personal.service,ProfesionalService,0,238,0,10,0,53,0,20,0,15
+ms-personal,com.sakura.personal.client,AgendaCliente.new ParameterizedTypeReference() {...},8,0,0,0,1,0,1,0,1,0
+ms-personal,com.sakura.personal.client,AgendaCliente.new ParameterizedTypeReference() {...},8,0,0,0,1,0,1,0,1,0
+ms-personal,com.sakura.personal.client,SesionGuard,39,0,6,0,10,0,6,0,3,0
+ms-personal,com.sakura.personal.client,PersonasCliente,64,0,0,0,16,0,3,0,3,0
+ms-personal,com.sakura.personal.client,AgendaCliente,94,0,8,0,17,0,8,0,4,0
+ms-personal,com.sakura.personal.client,CatalogoCliente,39,0,4,0,9,0,4,0,2,0
+ms-personal,com.sakura.personal.controller,ProfesionalController,128,0,0,0,23,0,14,0,14,0
+ms-personal,com.sakura.personal.exception,GlobalExceptionHandler,43,0,0,0,10,0,7,0,7,0
+ms-personal,com.sakura.personal.exception,NoAutenticadoException,4,0,0,0,2,0,1,0,1,0
+ms-personal,com.sakura.personal.exception,ReglaNegocioException,0,4,0,0,0,2,0,1,0,1
+ms-personal,com.sakura.personal.exception,RecursoNoEncontradoException,0,4,0,0,0,2,0,1,0,1
+ms-personal,com.sakura.personal.exception,AccesoDenegadoException,4,0,0,0,2,0,1,0,1,0
+ms-personal,com.sakura.personal,PersonalApplication,8,0,0,0,3,0,2,0,2,0

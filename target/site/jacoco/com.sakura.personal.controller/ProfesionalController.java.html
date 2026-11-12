@@ -1,0 +1,135 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="es"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ProfesionalController.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">ms-personal</a> &gt; <a href="index.source.html" class="el_package">com.sakura.personal.controller</a> &gt; <span class="el_source">ProfesionalController.java</span></div><h1>ProfesionalController.java</h1><pre class="source lang-java linenums">package com.sakura.personal.controller;
+
+import java.time.LocalDate;
+import java.util.List;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
+import com.sakura.personal.client.ReservaDTO;
+import com.sakura.personal.client.ServicioDTO;
+import com.sakura.personal.client.SesionGuard;
+import com.sakura.personal.model.Ausencia;
+import com.sakura.personal.model.Profesional;
+import com.sakura.personal.model.Turno;
+import com.sakura.personal.service.ProfesionalService;
+
+import jakarta.validation.Valid;
+
+@RestController
+@RequestMapping(&quot;/api/v1/profesionales&quot;)
+<span class="nc" id="L33">public class ProfesionalController {</span>
+
+	@Autowired
+	private ProfesionalService profesionalService;
+
+	@Autowired
+	private SesionGuard sesionGuard;
+
+	@GetMapping
+	public List&lt;Profesional&gt; listar() {
+<span class="nc" id="L43">		return profesionalService.listarActivos();</span>
+	}
+
+	@GetMapping(&quot;/gestion&quot;)
+	public List&lt;Profesional&gt; gestion(@RequestHeader(value = &quot;Authorization&quot;, required = false) String authorization) {
+<span class="nc" id="L48">		sesionGuard.exigirAdmin(authorization);</span>
+<span class="nc" id="L49">		return profesionalService.listarTodos();</span>
+	}
+
+	@GetMapping(&quot;/{id}&quot;)
+	public Profesional obtener(@PathVariable Long id) {
+<span class="nc" id="L54">		return profesionalService.buscar(id);</span>
+	}
+
+	@PostMapping
+	public ResponseEntity&lt;Profesional&gt; crear(
+			@RequestHeader(value = &quot;Authorization&quot;, required = false) String authorization,
+			@Valid @RequestBody Profesional profesional) {
+<span class="nc" id="L61">		sesionGuard.exigirAdmin(authorization);</span>
+<span class="nc" id="L62">		return new ResponseEntity&lt;&gt;(profesionalService.crear(profesional), HttpStatus.CREATED);</span>
+	}
+
+	@PutMapping(&quot;/{id}&quot;)
+	public Profesional actualizar(
+			@RequestHeader(value = &quot;Authorization&quot;, required = false) String authorization,
+			@PathVariable Long id,
+			@Valid @RequestBody Profesional profesional) {
+<span class="nc" id="L70">		sesionGuard.exigirAdmin(authorization);</span>
+<span class="nc" id="L71">		return profesionalService.actualizar(id, profesional);</span>
+	}
+
+	@DeleteMapping(&quot;/{id}&quot;)
+	public ResponseEntity&lt;Void&gt; eliminar(
+			@RequestHeader(value = &quot;Authorization&quot;, required = false) String authorization,
+			@PathVariable Long id) {
+<span class="nc" id="L78">		sesionGuard.exigirAdmin(authorization);</span>
+<span class="nc" id="L79">		profesionalService.eliminar(id, authorization);</span>
+<span class="nc" id="L80">		return ResponseEntity.noContent().build();</span>
+	}
+
+	@GetMapping(&quot;/{id}/turnos&quot;)
+	public List&lt;Turno&gt; turnos(@PathVariable Long id) {
+<span class="nc" id="L85">		return profesionalService.listarTurnos(id);</span>
+	}
+
+	@PostMapping(&quot;/{id}/turnos&quot;)
+	public ResponseEntity&lt;Turno&gt; agregarTurno(
+			@RequestHeader(value = &quot;Authorization&quot;, required = false) String authorization,
+			@PathVariable Long id,
+			@Valid @RequestBody Turno turno) {
+<span class="nc" id="L93">		sesionGuard.exigirAdmin(authorization);</span>
+<span class="nc" id="L94">		return new ResponseEntity&lt;&gt;(profesionalService.agregarTurno(id, turno), HttpStatus.CREATED);</span>
+	}
+
+	@GetMapping(&quot;/{id}/servicios&quot;)
+	public List&lt;ServicioDTO&gt; servicios(@PathVariable Long id) {
+<span class="nc" id="L99">		return profesionalService.listarServicios(id);</span>
+	}
+
+	@PutMapping(&quot;/{id}/servicios&quot;)
+	public List&lt;ServicioDTO&gt; asociarServicios(
+			@RequestHeader(value = &quot;Authorization&quot;, required = false) String authorization,
+			@PathVariable Long id,
+			@RequestBody List&lt;Long&gt; servicioIds) {
+<span class="nc" id="L107">		sesionGuard.exigirAdmin(authorization);</span>
+<span class="nc" id="L108">		return profesionalService.asociarServicios(id, servicioIds);</span>
+	}
+
+	@GetMapping(&quot;/{id}/ausencias&quot;)
+	public List&lt;Ausencia&gt; ausencias(@PathVariable Long id) {
+<span class="nc" id="L113">		return profesionalService.listarAusencias(id);</span>
+	}
+
+	@PostMapping(&quot;/{id}/ausencias&quot;)
+	public ResponseEntity&lt;Ausencia&gt; ausencia(
+			@RequestHeader(value = &quot;Authorization&quot;, required = false) String authorization,
+			@PathVariable Long id,
+			@Valid @RequestBody Ausencia ausencia) {
+<span class="nc" id="L121">		sesionGuard.exigirAdmin(authorization);</span>
+<span class="nc" id="L122">		return new ResponseEntity&lt;&gt;(profesionalService.registrarAusencia(id, ausencia), HttpStatus.CREATED);</span>
+	}
+
+	@GetMapping(&quot;/{id}/historial&quot;)
+	public List&lt;ReservaDTO&gt; historial(@RequestHeader(value = &quot;Authorization&quot;, required = false) String authorization,
+			@PathVariable Long id,
+			@RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate desde,
+			@RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate hasta) {
+<span class="nc" id="L130">		sesionGuard.exigirAdmin(authorization);</span>
+<span class="nc" id="L131">		return profesionalService.historial(id, desde, hasta, authorization);</span>
+	}
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.14.202510111229</span></div></body></html>

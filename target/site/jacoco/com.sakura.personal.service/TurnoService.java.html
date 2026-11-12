@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="es"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>TurnoService.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">ms-personal</a> &gt; <a href="index.source.html" class="el_package">com.sakura.personal.service</a> &gt; <span class="el_source">TurnoService.java</span></div><h1>TurnoService.java</h1><pre class="source lang-java linenums">package com.sakura.personal.service;
+
+import java.util.List;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import com.sakura.personal.exception.RecursoNoEncontradoException;
+import com.sakura.personal.exception.ReglaNegocioException;
+import com.sakura.personal.model.Profesional;
+import com.sakura.personal.model.Turno;
+import com.sakura.personal.repository.ProfesionalRepository;
+import com.sakura.personal.repository.TurnoRepository;
+
+@Service
+<span class="fc" id="L16">public class TurnoService {</span>
+
+	@Autowired
+	private TurnoRepository turnoRepository;
+
+	@Autowired
+	private ProfesionalRepository profesionalRepository;
+
+	public List&lt;Turno&gt; listar(Long profesionalId) {
+<span class="fc" id="L25">		return turnoRepository.findByProfesionalIdOrderByDiaSemanaAscHoraInicioAsc(profesionalId);</span>
+	}
+
+	public Turno guardar(Long profesionalId, Turno turno) {
+<span class="fc" id="L29">		Profesional profesional = profesionalRepository.findById(profesionalId)</span>
+<span class="fc" id="L30">				.orElseThrow(() -&gt; new RecursoNoEncontradoException(&quot;No existe el profesional&quot;));</span>
+<span class="fc bfc" id="L31" title="All 2 branches covered.">		if (!turno.getHoraInicio().isBefore(turno.getHoraFin())) {</span>
+<span class="fc" id="L32">			throw new ReglaNegocioException(&quot;La hora de inicio debe ser anterior a la de término&quot;);</span>
+		}
+<span class="fc" id="L34">		validarAlmuerzo(turno);</span>
+<span class="fc" id="L35">		List&lt;Turno&gt; delDia = turnoRepository.findByProfesionalIdAndDiaSemana(profesionalId, turno.getDiaSemana());</span>
+<span class="fc bfc" id="L36" title="All 2 branches covered.">		for (Turno otro : delDia) {</span>
+<span class="fc bfc" id="L37" title="All 2 branches covered.">			if (seSolapan(turno, otro)) {</span>
+<span class="fc" id="L38">				throw new ReglaNegocioException(&quot;El turno se solapa con otro horario del profesional&quot;);</span>
+			}
+<span class="fc" id="L40">		}</span>
+<span class="fc" id="L41">		turno.setId(null);</span>
+<span class="fc" id="L42">		turno.setProfesional(profesional);</span>
+<span class="fc" id="L43">		return turnoRepository.save(turno);</span>
+	}
+
+	private boolean seSolapan(Turno turno, Turno otro) {
+<span class="fc bfc" id="L47" title="All 4 branches covered.">		return turno.getHoraInicio().isBefore(otro.getHoraFin()) &amp;&amp; otro.getHoraInicio().isBefore(turno.getHoraFin());</span>
+	}
+
+	private void validarAlmuerzo(Turno turno) {
+<span class="fc bfc" id="L51" title="All 4 branches covered.">		if (turno.getHoraAlmuerzoInicio() == null &amp;&amp; turno.getHoraAlmuerzoFin() == null) {</span>
+<span class="fc" id="L52">			return;</span>
+		}
+<span class="fc bfc" id="L54" title="All 4 branches covered.">		if (turno.getHoraAlmuerzoInicio() == null || turno.getHoraAlmuerzoFin() == null</span>
+<span class="fc bfc" id="L55" title="All 2 branches covered.">				|| !turno.getHoraAlmuerzoInicio().isBefore(turno.getHoraAlmuerzoFin())</span>
+<span class="fc bfc" id="L56" title="All 2 branches covered.">				|| turno.getHoraAlmuerzoInicio().isBefore(turno.getHoraInicio())</span>
+<span class="fc bfc" id="L57" title="All 2 branches covered.">				|| turno.getHoraAlmuerzoFin().isAfter(turno.getHoraFin())) {</span>
+<span class="fc" id="L58">			throw new ReglaNegocioException(&quot;El almuerzo debe quedar dentro del turno&quot;);</span>
+		}
+<span class="fc" id="L60">	}</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.14.202510111229</span></div></body></html>
